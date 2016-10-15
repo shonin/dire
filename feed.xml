@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>dire</title>
+    <description>the world isn't always a fun place.</description>
+    <link>http://dire.io/</link>
+    <atom:link href="http://dire.io/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Sat, 15 Oct 2016 19:43:10 -0400</pubDate>
+    <lastBuildDate>Sat, 15 Oct 2016 19:43:10 -0400</lastBuildDate>
+    <generator>Jekyll v3.2.1</generator>
+    
+      <item>
+        <title>How to Deploy Django with Git on Ubuntu</title>
+        <description>&lt;h1 id=&quot;deploying-django-with-git-to-an-ubuntu-server-a-dokku-tutorial&quot;&gt;Deploying Django with Git to an Ubuntu Server: A Dokku Tutorial&lt;/h1&gt;
+
+&lt;p&gt;&lt;em&gt;This tutorial will use the Dokku tool to let you setup your own
+ personal Heroku, that you can deploy your apps to with as little as
+ a &lt;code class=&quot;highlighter-rouge&quot;&gt;git push dokku master&lt;/code&gt;&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;Note:&lt;/em&gt;&lt;/strong&gt; This tutorial assumes you’re at least somewhat familiar
+ with using the shell, DNS, SSH, Django, and git&lt;/p&gt;
+
+&lt;h2 id=&quot;step-1-spin-up-a-new-ubuntu-server&quot;&gt;Step 1) Spin up a &lt;em&gt;new&lt;/em&gt; Ubuntu Server&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Ubuntu 14.04 x64&lt;/code&gt; or &lt;code class=&quot;highlighter-rouge&quot;&gt;Ubuntu 16.04 x64&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;At least 1GB of memory&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;or-digital-ocean-one-click-deploy&quot;&gt;Or, Digital Ocean One Click Deploy&lt;/h4&gt;
+
+&lt;p&gt;Digital Ocean will install Dokku for you.&lt;br /&gt;
+Just sign up for an account with Digital Ocean and deploy.&lt;br /&gt;
+&lt;a href=&quot;https://www.digitalocean.com/products/one-click-apps/dokku/&quot;&gt;Here is the link&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;If you do this, skip to step 3&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; Life is easier if you setup SSH keys. Digital Ocean has an
+ option to do this on setup, if you went with AWS or some other host
+ you can add them after you install Dokku.&lt;/p&gt;
+
+&lt;h2 id=&quot;optional---setup-a-dns&quot;&gt;&lt;em&gt;Optional&lt;/em&gt; - Setup a DNS&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;In your domain provider of choice, navigate into the DNS settings of
+a domain that you want to have for the server&lt;/li&gt;
+  &lt;li&gt;Add an A Record with the value of “@” pointing to the IP Address of your new Ubuntu server&lt;/li&gt;
+  &lt;li&gt;Add a wildcard “*” A Record pointing to the same IP to capture all of the subdomains.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;step-2-install-dokku&quot;&gt;Step 2) Install Dokku&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;SSH into your server:&lt;/strong&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;ssh root@yourdomain.com&lt;/code&gt; or if you didn’t
+ setup a domain, it’ll be &lt;code class=&quot;highlighter-rouge&quot;&gt;ssh root@&amp;lt;your ip&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;If you didn’t setup SSH keys you’ll need to login with your root
+server password, don’t worry you’ll be able to set them up in just a
+ moment&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Run these two commands:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;wget https://raw.githubusercontent.com/dokku/dokku/v0.7.2/bootstrap.sh
+sudo &lt;span class=&quot;nv&quot;&gt;DOKKU_TAG&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;v0.7.2 bash bootstrap.sh
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;When the code is done scrolling and the script is finished, navigate
+to your server in a browser, either the servers IP or the domain you
+setup. Choose your settings. You can also paste in your public ssh key
+ here, which is how you will deploy with git.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://trdforums.org/styles/default/xenforo/smilies/awyeah.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;step-3-create-a-new-app-container&quot;&gt;Step 3) Create a New App Container&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;On your new Ubuntu Server:&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dokku apps:create django-tutorial
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;where you can replace &lt;code class=&quot;highlighter-rouge&quot;&gt;django-tutorial&lt;/code&gt; with you app name&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Yes,that’s it. Dokku is Awesome. Being a developer is almost
+ easy.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;step-4-setup-postgres&quot;&gt;Step 4) Setup Postgres&lt;/h2&gt;
+
+&lt;p&gt;&lt;em&gt;You’re seting up a Django app, so I’m assuming you want Postgres, but
+if you app doesn’t require this then you don’t need to do it.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Inside your server run:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git
+dokku postgres:create example-database
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Now you need to link the database to the app&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dokku postgres:link example-database django-tutorial
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;This sets up a postgres database and puts an environment var in your
+app container called &lt;code class=&quot;highlighter-rouge&quot;&gt;DATABASE_URL&lt;/code&gt;. Your Django app just needs to be
+ looking for it.&lt;/p&gt;
+
+&lt;h2 id=&quot;step-5-deploying-your-django-app&quot;&gt;Step 5) Deploying your Django App&lt;/h2&gt;
+
+&lt;p&gt;At this point your new server is completely configured. The trick is,
+your app needs to be able to run in this type of environment. A quick and ready
+to go option is to use &lt;a href=&quot;https://github.com/heroku/heroku-django-template&quot;&gt;Heroku’s Django Template&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;From your Django projects repo, add your Dokku container as a remote&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git remote add dokku dokku@&amp;lt;yourserver&amp;gt;:django-tutorial
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Deploy!&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git push dokku master
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Depending on how you setup Dokku you’ll have a messsage in your terminal telling
+your where you can visit your deployed app. I set mine up as a subdomain,
+so it’ll live at &lt;code class=&quot;highlighter-rouge&quot;&gt;http://django-tutorial.somedomain.com&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;uh-oh-aka-how-to-view-logs&quot;&gt;Uh Oh (AKA how to view logs)&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://a.deviantart.net/avatars/o/h/oh-god-why-plz.png?1&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;So you navigated to your app in the browser and got a Server 500 error?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;ssh into your Dokku server and get your app’s Container ID, then run
+&lt;code class=&quot;highlighter-rouge&quot;&gt;docker attach&lt;/code&gt; on it.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker ps  
+CONTAINER ID        IMAGE               ETC
+dc1e66f804a9        django-tutorial     etc
+
+docker attach dc1e66f804a9
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Keep that running in the terminal and then go back to the browser and refresh
+to generate some logs. If you don’t see anything then maybe you need to put
+logging into your app.&lt;/p&gt;
+
+&lt;h2 id=&quot;adding-more-env-vars&quot;&gt;Adding More Env Vars&lt;/h2&gt;
+&lt;p&gt;&lt;em&gt;Some apps have these…&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;In your Dokku server run&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dokku config django-tutorial
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;to see a list of all of your current environment variables.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;To set a new one:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dokku config:set django-tutorial &lt;span class=&quot;nv&quot;&gt;MY_VAR&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;my-value
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;in-conclusion&quot;&gt;In Conclusion&lt;/h2&gt;
+
+&lt;p&gt;I hope this was helpful. Dokku is cool. I’m gonna get my $7 back from
+Heroku now. :peace:&lt;/p&gt;
+</description>
+        <pubDate>Mon, 03 Oct 2016 15:10:00 -0400</pubDate>
+        <link>http://dire.io/2016/10/03/Django-Dokku.html</link>
+        <guid isPermaLink="true">http://dire.io/2016/10/03/Django-Dokku.html</guid>
+        
+        <category>django</category>
+        
+        <category>dokku</category>
+        
+        <category>how to</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>hello world</title>
+        <description>&lt;p&gt;just doing that thing&lt;/p&gt;
+</description>
+        <pubDate>Sat, 01 Oct 2016 15:10:00 -0400</pubDate>
+        <link>http://dire.io/2016/10/01/hello.html</link>
+        <guid isPermaLink="true">http://dire.io/2016/10/01/hello.html</guid>
+        
+        <category>general</category>
+        
+        
+      </item>
+    
+  </channel>
+</rss>

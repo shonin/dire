@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en" itemscope itemtype="http://schema.org/WebPage">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+
+    <title>How to Deploy Django with Git on Ubuntu</title>
+    <meta name="description" content="Deploying Django with Git to an Ubuntu Server: A Dokku Tutorial">
+    <meta name="robots" content="index,follow">
+    
+        <meta name="author" content="shonin">
+    
+    <meta itemprop="name" content="dire">
+
+    <meta property="og:url" content="http://dire.io/2016/10/03/Django-Dokku.html" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="How to Deploy Django with Git on Ubuntu" />
+    <meta property="og:description" content="the world isn't always a fun place." />
+    <meta property="og:image" content="http://dire.io/images/favicon.ico" />
+    <meta property="og:image:type" content="image/png" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@normalidea" />
+    <meta name="twitter:title" content="How to Deploy Django with Git on Ubuntu" />
+    <meta name="twitter:description" content="the world isn't always a fun place." />
+    <meta name="twitter:image" content="http://dire.io/images/favicon.ico" />
+
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="ATOM feed">
+    <link href="/feed.xml" type="application/rss+xml" rel="alternate" title="RSS feed">
+
+
+    <link rel="shortcut icon" href="/images/favicon.ico">
+
+    <link rel="stylesheet" href="/styles/mlz/mlz.css">
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/fa/css/font-awesome.min.css">
+
+</head>
+
+  <body>
+    <div class="container">
+      <div class="section my-section" itemprop="mainContentOfPage" itemscope itemtype="https://schema.org/WebPageElement">
+
+        
+          <a href="/">
+            <img class="not-home-logo" src="/images/rakusu.jpg">
+          </a>
+        
+
+        <div class="row">
+          <div class="col s12 m8 offset-m2 l6 offset-l3">
+            <article class="left-align" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <h2 class="my-mini-heading" itemprop="name headline">How to Deploy Django with Git on Ubuntu<br>
+    <span class="my-mini-heading-sub">
+    <time datetime="2016-10-03T15:10:00-04:00" itemprop="datePublished">
+      Oct 3, 2016
+    </time>
+    </span></h2>
+
+  <div class="my-text-body">
+    <h1 id="deploying-django-with-git-to-an-ubuntu-server-a-dokku-tutorial">Deploying Django with Git to an Ubuntu Server: A Dokku Tutorial</h1>
+
+<p><em>This tutorial will use the Dokku tool to let you setup your own
+ personal Heroku, that you can deploy your apps to with as little as
+ a <code class="highlighter-rouge">git push dokku master</code></em></p>
+
+<p><strong><em>Note:</em></strong> This tutorial assumes you’re at least somewhat familiar
+ with using the shell, DNS, SSH, Django, and git</p>
+
+<h2 id="step-1-spin-up-a-new-ubuntu-server">Step 1) Spin up a <em>new</em> Ubuntu Server</h2>
+
+<ul>
+  <li><code class="highlighter-rouge">Ubuntu 14.04 x64</code> or <code class="highlighter-rouge">Ubuntu 16.04 x64</code></li>
+  <li>At least 1GB of memory</li>
+</ul>
+
+<h4 id="or-digital-ocean-one-click-deploy">Or, Digital Ocean One Click Deploy</h4>
+
+<p>Digital Ocean will install Dokku for you.<br />
+Just sign up for an account with Digital Ocean and deploy.<br />
+<a href="https://www.digitalocean.com/products/one-click-apps/dokku/">Here is the link</a></p>
+
+<p>If you do this, skip to step 3</p>
+
+<p><strong>Note:</strong> Life is easier if you setup SSH keys. Digital Ocean has an
+ option to do this on setup, if you went with AWS or some other host
+ you can add them after you install Dokku.</p>
+
+<h2 id="optional---setup-a-dns"><em>Optional</em> - Setup a DNS</h2>
+
+<ol>
+  <li>In your domain provider of choice, navigate into the DNS settings of
+a domain that you want to have for the server</li>
+  <li>Add an A Record with the value of “@” pointing to the IP Address of your new Ubuntu server</li>
+  <li>Add a wildcard “*” A Record pointing to the same IP to capture all of the subdomains.</li>
+</ol>
+
+<h2 id="step-2-install-dokku">Step 2) Install Dokku</h2>
+
+<p><strong>SSH into your server:</strong> <code class="highlighter-rouge">ssh root@yourdomain.com</code> or if you didn’t
+ setup a domain, it’ll be <code class="highlighter-rouge">ssh root@&lt;your ip&gt;</code></p>
+
+<p><em>If you didn’t setup SSH keys you’ll need to login with your root
+server password, don’t worry you’ll be able to set them up in just a
+ moment</em></p>
+
+<p><strong>Run these two commands:</strong></p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>wget https://raw.githubusercontent.com/dokku/dokku/v0.7.2/bootstrap.sh
+sudo <span class="nv">DOKKU_TAG</span><span class="o">=</span>v0.7.2 bash bootstrap.sh
+</code></pre>
+</div>
+
+<p>When the code is done scrolling and the script is finished, navigate
+to your server in a browser, either the servers IP or the domain you
+setup. Choose your settings. You can also paste in your public ssh key
+ here, which is how you will deploy with git.</p>
+
+<p><img src="http://trdforums.org/styles/default/xenforo/smilies/awyeah.png" alt="" /></p>
+
+<h2 id="step-3-create-a-new-app-container">Step 3) Create a New App Container</h2>
+
+<p><strong><em>On your new Ubuntu Server:</em></strong></p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>dokku apps:create django-tutorial
+</code></pre>
+</div>
+<p>where you can replace <code class="highlighter-rouge">django-tutorial</code> with you app name</p>
+
+<ul>
+  <li>Yes,that’s it. Dokku is Awesome. Being a developer is almost
+ easy.</li>
+</ul>
+
+<h2 id="step-4-setup-postgres">Step 4) Setup Postgres</h2>
+
+<p><em>You’re seting up a Django app, so I’m assuming you want Postgres, but
+if you app doesn’t require this then you don’t need to do it.</em></p>
+
+<p><strong>Inside your server run:</strong></p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git
+dokku postgres:create example-database
+</code></pre>
+</div>
+
+<p>Now you need to link the database to the app</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>dokku postgres:link example-database django-tutorial
+</code></pre>
+</div>
+
+<p>This sets up a postgres database and puts an environment var in your
+app container called <code class="highlighter-rouge">DATABASE_URL</code>. Your Django app just needs to be
+ looking for it.</p>
+
+<h2 id="step-5-deploying-your-django-app">Step 5) Deploying your Django App</h2>
+
+<p>At this point your new server is completely configured. The trick is,
+your app needs to be able to run in this type of environment. A quick and ready
+to go option is to use <a href="https://github.com/heroku/heroku-django-template">Heroku’s Django Template</a></p>
+
+<p>From your Django projects repo, add your Dokku container as a remote</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>git remote add dokku dokku@&lt;yourserver&gt;:django-tutorial
+</code></pre>
+</div>
+
+<p>Deploy!</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>git push dokku master
+</code></pre>
+</div>
+
+<p>Depending on how you setup Dokku you’ll have a messsage in your terminal telling
+your where you can visit your deployed app. I set mine up as a subdomain,
+so it’ll live at <code class="highlighter-rouge">http://django-tutorial.somedomain.com</code></p>
+
+<h2 id="uh-oh-aka-how-to-view-logs">Uh Oh (AKA how to view logs)</h2>
+
+<p><img src="http://a.deviantart.net/avatars/o/h/oh-god-why-plz.png?1" alt="" /></p>
+
+<p><strong>So you navigated to your app in the browser and got a Server 500 error?</strong></p>
+
+<p>ssh into your Dokku server and get your app’s Container ID, then run
+<code class="highlighter-rouge">docker attach</code> on it.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>docker ps  
+CONTAINER ID        IMAGE               ETC
+dc1e66f804a9        django-tutorial     etc
+
+docker attach dc1e66f804a9
+</code></pre>
+</div>
+
+<p>Keep that running in the terminal and then go back to the browser and refresh
+to generate some logs. If you don’t see anything then maybe you need to put
+logging into your app.</p>
+
+<h2 id="adding-more-env-vars">Adding More Env Vars</h2>
+<p><em>Some apps have these…</em></p>
+
+<p>In your Dokku server run</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>dokku config django-tutorial
+</code></pre>
+</div>
+
+<p>to see a list of all of your current environment variables.</p>
+
+<p><strong>To set a new one:</strong></p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code>dokku config:set django-tutorial <span class="nv">MY_VAR</span><span class="o">=</span>my-value
+</code></pre>
+</div>
+
+<h2 id="in-conclusion">In Conclusion</h2>
+
+<p>I hope this was helpful. Dokku is cool. I’m gonna get my $7 back from
+Heroku now. :peace:</p>
+
+  </div>
+
+  <p class="center-align my-text-author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    
+      <span itemprop="name">a post by shonin</span>
+    
+    <br>
+    
+      <i class="fa fa-tags" aria-hidden="true"></i>
+      
+        <span class="my-tag">django</span>&ensp;
+      
+        <span class="my-tag">dokku</span>&ensp;
+      
+        <span class="my-tag">how to</span>&ensp;
+      
+    
+  </p>
+
+  <div class="center-align">
+  
+    <a class="waves-effect waves-teal btn-flat btn-large my-thin-btn disabled"><i class="fa fa-angle-double-left" aria-hidden="true"></i></a>
+  
+  <a class="waves-effect waves-teal btn-flat btn-large" href="/">Home</a>
+  
+    <a class="waves-effect waves-teal btn-flat btn-large my-thin-btn" href="/2016/10/01/hello.html"><i class="fa fa-angle-double-right" aria-hidden="true"></i></a>
+  
+  </div>
+</article>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer class="my-footer z-depth-2">
+    <p>
+        <a class="waves-effect waves-teal btn-flat my-imprint-link" href="/about.html ">About</a>        <a href="mailto:hello@dire.io" class="waves-effect waves-teal btn-flat my-mail-link"><i class="fa fa-envelope-o"></i></a>  <a href="https://twitter.com/normalidea"
+            class="waves-effect waves-teal btn-flat my-twitter-link"><i class="fa fa-twitter"></i></a>
+    </p>
+</footer>
+<script type="text/javascript" src="/styles/jquery.js"></script>
+<script type="text/javascript" src="/styles/mlz/mlz.js"></script>
+
+<!-- <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', '', 'auto');
+  ga('send', 'pageview');
+
+</script> -->
+
+
+  </body>
+</html>
